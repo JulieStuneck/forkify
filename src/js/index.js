@@ -44,6 +44,16 @@ elements.searchForm.addEventListener('submit', e => {
 	controlSearch();
 });
 
-
+/*Event Delegation (22:40 min) – attach event listener when element is not present when page is first loaded. Attach event listener to an element that is already present, then determine where the click happened and take action based on that*/
+elements.searchResPages.addEventListener('click', e => {
+	const btn = e.target.closest('.btn-inline');
+	//console.log(btn);//e=click event, target=where it happened
+	if (btn) {
+		const goToPage = parseInt(btn.dataset.goto, 10);//specifiy using base-10 numbering system
+		searchView.clearResults();
+		searchView.renderResults(state.search.result, goToPage);
+		//console.log(goToPage);
+	}
+});
 
 
