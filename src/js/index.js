@@ -5,16 +5,18 @@
 
 //Global app controller
 import Search from './models/Search';
+import Recipe from './models/Recipe';
 import * as searchView from './views/searchView';
 import { elements, renderLoader, clearLoader } from './views/base';
 
 //One Object to store Global State of app
-// Search Object
-//Current Recipe Object
-//Liked Recipes 
+	// Search Object
+	//Current Recipe Object
+	//Liked Recipes 
 
 const state = {};
 
+//SEARCH CONTROLLER
 const controlSearch = async () => {
 	//1. get query from view
 	const query = searchView.getInput();
@@ -29,6 +31,7 @@ const controlSearch = async () => {
 		searchView.clearResults();
 		renderLoader(elements.searchRes);
 
+		try {
 		//4. Search for recipes
 		await state.search.getResults();
 
@@ -36,6 +39,10 @@ const controlSearch = async () => {
 		//console.log(state.search.result);
 		clearLoader();
 		searchView.renderResults(state.search.result);
+		} catch (err) {
+			alert('Something went wrong with the search...')
+			clearLoader();
+		}
 	}
 }
 
@@ -57,3 +64,41 @@ elements.searchResPages.addEventListener('click', e => {
 });
 
 
+//RECIPE CONTROLLER
+	//for testing
+	/*const r = new Recipe(46956)
+	r.getRecipe();
+	console.log(r);*/
+
+const controlRecipe = async () => {
+	//Get ID from url
+	const id = window.location.hash.replace('#', ''); //location=entire url
+	console.log(id);
+
+	if (id) {
+		//Prepare UI for changes
+
+		//Create new recipe object
+		state.recipe = new Recipe(id);
+
+		try {
+		//Get recipe data
+		await state.recipe.getRecipe();
+
+		//Calculate servings and time
+		state.recipe.calcTime();
+		state.recipe.calcServings();
+
+		//Render recipe
+		console.log(state.recipe);
+		} catch (err) {
+			alert(`Error processing recipe.`)
+		}
+	}
+};
+
+/*window.addEventListener('hashchange', controlRecipe);
+window.addEventListener('load', controlRecipe); //will load recipe on page load. Useful if user has bookmarked page (otherwise will only load recipe on hashChange)*/
+
+//eventlisteners, above, call the same function. Put events into an array
+['hashchange', 'load'].forEach(event => window.addEventListener(event, controlRecipe));
