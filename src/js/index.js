@@ -19,8 +19,7 @@ const state = {};
 //SEARCH CONTROLLER
 const controlSearch = async () => {
 	//1. get query from view
-	const query = searchView.getInput();
-	//console.log(query);
+	const query = searchView.getInput();//actual desired code
 
 	if (query) {
 		//2. New Search object and add it to state
@@ -47,9 +46,10 @@ const controlSearch = async () => {
 }
 
 elements.searchForm.addEventListener('submit', e => {
-	e.preventDefault(); //prevent page reloading when click search button
+	e.preventDefault();
 	controlSearch();
 });
+
 
 /*Event Delegation (22:40 min) – attach event listener when element is not present when page is first loaded. Attach event listener to an element that is already present, then determine where the click happened and take action based on that*/
 elements.searchResPages.addEventListener('click', e => {
@@ -65,10 +65,10 @@ elements.searchResPages.addEventListener('click', e => {
 
 
 //RECIPE CONTROLLER
-	//for testing
-	/*const r = new Recipe(46956)
-	r.getRecipe();
-	console.log(r);*/
+	//for testing:
+		/*const r = new Recipe(46956)
+		r.getRecipe();
+		console.log(r);*/
 
 const controlRecipe = async () => {
 	//Get ID from url
@@ -82,8 +82,10 @@ const controlRecipe = async () => {
 		state.recipe = new Recipe(id);
 
 		try {
-		//Get recipe data
+		//Get recipe data and parse ingredients
 		await state.recipe.getRecipe();
+		console.log(state.recipe.ingredients);
+		state.recipe.parseIngredients();
 
 		//Calculate servings and time
 		state.recipe.calcTime();
