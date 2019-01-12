@@ -6,7 +6,10 @@
 //Global app controller
 import Search from './models/Search';
 import Recipe from './models/Recipe';
+import List from './models/List';
 import * as searchView from './views/searchView';
+import * as recipeView from './views/recipeView';
+import * as listView from './views/listView';
 import { elements, renderLoader, clearLoader } from './views/base';
 
 //One Object to store Global State of app
@@ -19,8 +22,7 @@ const state = {};
 //SEARCH CONTROLLER
 const controlSearch = async () => {
 	//1. get query from view
-	const query = searchView.getInput();
-	//console.log(query);
+	const query = searchView.getInput();//actual desired code
 
 	if (query) {
 		//2. New Search object and add it to state
@@ -47,11 +49,12 @@ const controlSearch = async () => {
 }
 
 elements.searchForm.addEventListener('submit', e => {
-	e.preventDefault(); //prevent page reloading when click search button
+	e.preventDefault();
 	controlSearch();
 });
 
-/*Event Delegation (22:40 min) – attach event listener when element is not present when page is first loaded. Attach event listener to an element that is already present, then determine where the click happened and take action based on that*/
+
+/*Event Delegation – attach event listener when element is not present when page is first loaded. Attach event listener to an element that is already present, then determine where the click happened and take action based on that*/
 elements.searchResPages.addEventListener('click', e => {
 	const btn = e.target.closest('.btn-inline');
 	//console.log(btn);//e=click event, target=where it happened
@@ -65,10 +68,10 @@ elements.searchResPages.addEventListener('click', e => {
 
 
 //RECIPE CONTROLLER
-	//for testing
-	/*const r = new Recipe(46956)
-	r.getRecipe();
-	console.log(r);*/
+	//for testing:
+		/*const r = new Recipe(46956)
+		r.getRecipe();
+		console.log(r);*/
 
 const controlRecipe = async () => {
 	//Get ID from url
@@ -77,20 +80,28 @@ const controlRecipe = async () => {
 
 	if (id) {
 		//Prepare UI for changes
+		recipeView.clearRecipe();
+		renderLoader(elements.recipe);
+
+		//Highlight the selected search item
+		if (state.search) searchView.highlightSelected(id);
 
 		//Create new recipe object
 		state.recipe = new Recipe(id);
 
 		try {
-		//Get recipe data
+		//Get recipe data and parse ingredients
 		await state.recipe.getRecipe();
+		//console.log(state.recipe.ingredients);
+		state.recipe.parseIngredients();
 
 		//Calculate servings and time
 		state.recipe.calcTime();
 		state.recipe.calcServings();
 
 		//Render recipe
-		console.log(state.recipe);
+		clearLoader();
+		recipeView.renderRecipe(state.recipe);
 		} catch (err) {
 			alert(`Error processing recipe.`)
 		}
@@ -102,3 +113,40 @@ window.addEventListener('load', controlRecipe); //will load recipe on page load.
 
 //eventlisteners, above, call the same function. Put events into an array
 ['hashchange', 'load'].forEach(event => window.addEventListener(event, controlRecipe));
+
+
+//LIST CONTROLLER
+
+const controlList = () => {
+	//Create a new list IF there is none yet
+	if (!state.list) state.list = new List();
+
+	//Add each ingredient to the list and user interface
+	state.recipe.ingredients.forEach(el => {
+		const item = state.list.addItem(el.count, el.unit, el.ingredient);
+		listView.renderItem(item);
+	});
+}
+
+
+
+//Handling recipe button clicks
+//test what was clicked, then react accordingly
+elements.recipe.addEventListener('click', e => {
+	if (e.target.matches('.btn-decrease, .btn-decrease *')) {//* includes and child element
+		// Decrease button is clicked
+		if(state.recipe.servings > 1) {
+		state.recipe.updateServings('dec');
+		recipeView.updateServingsIngredients(state.recipe);
+		}
+	} else if (e.target.matches('.btn-increase, .btn-increase *')) {
+		// Increase button is clicked
+		state.recipe.updateServings('inc');
+		recipeView.updateServingsIngredients(state.recipe);
+	} else if (e.target.matches('.recipe__btn--add, .recipe__btn--add *')) {
+		controlList();
+	}
+
+});
+
+window.l = new List();
