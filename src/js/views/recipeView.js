@@ -9,15 +9,17 @@ const formatCount = count => {
 	if (count) {
 		//count = 2.5 --> 2 1/2 (separate integer from decimal)
 		//count = 0.5 --> 1/2
-		const [int, dec] = count.toString().split('.').map(el => parseInt(el, 10));
+        const newCount = Math.round(count * 10000) / 10000;
+        //Math.round only returns integers. Need to multiply to use it
+		const [int, dec] = newCount.toString().split('.').map(el => parseInt(el, 10));
 		//desctructered array, convert to string so can split numbers at decimal, use map & parseInt to create a new array, converting them back into numbers (base 10)
-		if (!dec) return count;
+		if (!dec) return newCount;
 
 		if (int === 0) {
-			const fr = new Fraction(count);
+			const fr = new Fraction(newCount);
 			return `${fr.numerator}/${fr.denominator}`;
 		} else {
-			const fr = new Fraction(count - int);
+			const fr = new Fraction(newCount - int);
 			return `${int} ${fr.numerator}/${fr.denominator}`;
 		}
 	}
